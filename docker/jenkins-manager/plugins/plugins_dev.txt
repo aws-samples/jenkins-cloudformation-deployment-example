@@ -1,0 +1,11 @@
+htmlpublisher
+ssh
+rebuild
+greenballs
+aws-credentials
+blueocean
+kubernetes
+ansicolor
+parameterized-trigger
+parameterized-scheduler
+simple-parameterized-builds-report

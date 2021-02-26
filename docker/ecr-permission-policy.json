@@ -1,0 +1,21 @@
+{
+    "Version": "2008-10-17",
+    "Statement": [
+      {
+        "Sid": "PermissionPolicy",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "arn:aws:iam::<Enter The AWS ACCOUNT ID>:root"
+        },
+        "Action": [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:BatchGetImage",
+          "ecr:CompleteLayerUpload",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:InitiateLayerUpload",
+          "ecr:PutImage",
+          "ecr:UploadLayerPart"
+        ]
+      }
+    ]
+  }
