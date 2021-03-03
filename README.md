@@ -170,6 +170,12 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 ```bash
 # Build a docker image and push to AWS ECR Repository
 ~ ./build-image.sh "<AWS-ACCOUNT-ID>" "<REPOSITORY-NAME>" "<REGION-NAME>" "<BUILD-FOLDER-NAME>"
+
+# Replace the Account ID and Region for Jenkins Master
+~ ./build-image.sh "<AWS-ACCOUNT-ID>" "test-jenkins-manager" "<REGION-NAME>" "jenkins-manager"
+
+# Replace the Account ID and Region for Jenkins Agent
+~ ./build-image.sh "<AWS-ACCOUNT-ID>" "test-jenkins-agent" "<REGION-NAME>" "jenkins-agent"
 ```
 
 - After you've built both images, navigate to the "k8s" directory, modify the manifest file for the jenkins image, then execute the manifest.yaml template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
