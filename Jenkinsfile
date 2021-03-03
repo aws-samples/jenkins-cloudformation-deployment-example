@@ -8,12 +8,13 @@ pipeline {
 
   parameters {
     string(name: 'STACK_NAME', defaultValue: 'example-stack', description: 'Enter the CloudFormation Stack Name.')
-    string(name: 'PARAMETERS_FILE_NAME', defaultValue: 'example-stack-parameters', description: 'Enter the Parameters File Name (Do not append any file extension type. e.g. .properties)')
-    string(name: 'TEMPLATE_NAME', defaultValue: 'S3-Bucket', description: 'Enter the CloudFormation Template Name (Do not append any file extension type. e.g. yml or .yaml)')
+    string(name: 'PARAMETERS_FILE_NAME', defaultValue: 'example-stack-parameters.properties', description: 'Enter the Parameters File Name (Must contain file extension type *.properties)')
+    string(name: 'TEMPLATE_NAME', defaultValue: 'S3-Bucket.yaml', description: 'Enter the CloudFormation Template Name (Must contain file extension type *.yaml)')
     credentials(name: 'CFN_CREDENTIALS_ID', defaultValue: '', description: 'AWS Account Role.', required: true)
     choice(
       name: 'REGION',
       choices: [
+          ' ',
           'us-east-1',
           'us-east-2'
           ],
@@ -73,7 +74,7 @@ pipeline {
               credentialsId: "${CFN_CREDENTIALS_ID}",
               accessKeyVariable: 'AWS_ACCESS_KEY_ID',
               secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'cloudformation/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
+                sh 'scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
             }
           }
         }
@@ -92,7 +93,7 @@ pipeline {
               credentialsId: "${CFN_CREDENTIALS_ID}",
               accessKeyVariable: 'AWS_ACCESS_KEY_ID',
               secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'cloudformation/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
+                sh 'scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
             }
           }
         }
@@ -111,7 +112,7 @@ pipeline {
               credentialsId: "${CFN_CREDENTIALS_ID}",
               accessKeyVariable: 'AWS_ACCESS_KEY_ID',
               secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'cloudformation/delete-stack.sh ${STACK_NAME} ${REGION}'
+                sh 'scripts/delete-stack.sh ${STACK_NAME} ${REGION}'
             }
           }
         }

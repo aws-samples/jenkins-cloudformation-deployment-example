@@ -90,7 +90,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 
 ```bash
 # Clone the git repository
-~ git clone https://gitlab.aws.dev/toussaiv/jenkins-cloudformation-example
+~ git clone https://github.com/aws-samples/jenkins-cloudformation-deployment-example.git
 ```
 
 - The following parameters is an example which will vary based on your preference. If you choose to deploy with a different name, region, zone, or node capacity please modify accordingly.
@@ -119,16 +119,16 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 - This IAM role must also have an established trust relationship to the Shared Services account. In this case, the Jenkins Agent will be granted the ability to assume the role of the particular target account from the Shared Services account. See the images below.
 
 ![Image: img/pic-01.png](img/pic-01.png)
-*Figure 2. Create and IAM Role and Enter the Account ID of the Shared Services account*
+*Figure 2a. Create and IAM Role and Enter the Account ID of the Shared Services account*
 
 ![Image: img/pic-02.png](img/pic-02.png)
-*Figure 3. Create IAM Policy with CloudFormation and S3 actions*
+*Figure 2b. Create IAM Policy with CloudFormation and S3 actions*
 
 ![Image: img/pic-03.png](img/pic-03.png)
-*Figure 4. Review IAM Policy*
+*Figure 2c. Review IAM Policy*
 
 ![Image: img/pic-04.png](img/pic-04.png)
-*Figure 5. Attach IAM Policy to IAM Role and complete IAM role creation*
+*Figure 2d. Attach IAM Policy to IAM Role and complete IAM role creation*
 
 ## Create AWS ECR Repository
 
@@ -200,13 +200,13 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 - The [Kubernetes Plugin](https://plugins.jenkins.io/kubernetes/) and [CloudBees AWS Credentials Plugin](https://plugins.jenkins.io/aws-credentials/) should be installed as part of the Jenkins image build from the Managed Plugins.
 
 ![Image: img/jenkins-00.png](img/jenkins-00.png)
-*Figure 6. Jenkins Login Page*
+*Figure 3. Jenkins Login Page*
 
 - Navigate: Manage Jenkins → Configure Global Security
 - Set the Crumb Issuer to remove the error pages to prevent Cross Site Request Forgery exploits.
 
 ![Image: img/jenkins-01.png](img/jenkins-01.png)
-*Figure 7. Configure Global Security*
+*Figure 4. Configure Global Security*
 
 ## Configure Jenkins Kubernetes Cloud
 
@@ -215,7 +215,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 
 ![Image: img/jenkins-02.png](img/jenkins-02.png)
 
-*Figure 8. Jenkins Configure Nodes & Clouds*
+*Figure 5a. Jenkins Configure Nodes & Clouds*
 
 *Note: Before proceeding, please ensure that you have access to your Amazon EKS cluster information, whether it is through Console or CLI.*
 
@@ -226,7 +226,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
   - The format is done as the following: [`https://<service-name>.<namespace>.svc.cluster.local`](https://(service-name).(namespace).svc.cluster.local/)
 
 ![Image: img/k8s-plugin-01.png](img/k8s-plugin-01.png)
-*Figure 9. Configure Kubernetes Cloud*
+*Figure 5b. Configure Kubernetes Cloud*
 
 ## Set AWS Credentials
 
@@ -234,10 +234,10 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 - Enter the IAM Role ARN you created earlier for both the ID and IAM Role to use in the field as shown below.
 
 ![Image: img/jenkins-03.png](img/jenkins-03.png)
-*Figure 10. AWS Credentials Binding*
+*Figure 6. AWS Credentials Binding*
 
 ![Image: img/jenkins-04.png](img/jenkins-04.png)
-*Figure 11. Managed Credentials*
+*Figure 7. Managed Credentials*
 
 ## Create a pipeline
 
@@ -245,7 +245,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 - Create a Pipeline
 
 ![Image: img/jenkins-05.png](img/jenkins-05.png)
-*Figure 12. Create a Pipeline*
+*Figure 8. Create a Pipeline*
 
 ## Examine and modify code repository files
 
@@ -300,28 +300,28 @@ else
     REGION=$5
 fi
 
-if [ ! -f "cloudformation/$TEMPLATE_NAME.yaml" ]; then
-    echo "CloudFormation template $TEMPLATE_NAME.yaml does not exist"
+if [[ "cloudformation/"$TEMPLATE_NAME != *.yaml ]]; then
+    echo "CloudFormation template $TEMPLATE_NAME does not exist. Make sure the extension is *.yaml and not (*.yml)"
     exit 0
 fi
 
-if [ ! -f "parameters/$PARAMETERS_FILE_NAME.properties" ]; then
-    echo "CloudFormation parameters $PARAMETERS_FILE_NAME.properties does not exist"
+if [[ "parameters/"$PARAMETERS_FILE_NAME != *.properties ]]; then
+    echo "CloudFormation parameters $PARAMETERS_FILE_NAME does not exist"
     exit 0
 fi
 
-if [[ $CHANGESET_MODE == true ]]; then
+if [[ $CHANGESET_MODE == "true" ]] || [[ $CHANGESET_MODE == "True" ]]; then
     aws cloudformation deploy \
     --stack-name $STACK_NAME \
-    --template-file cloudformation/$TEMPLATE_NAME.yaml \
-    --parameter-overrides file://parameters/$PARAMETERS_FILE_NAME.properties \
+    --template-file cloudformation/$TEMPLATE_NAME \
+    --parameter-overrides file://parameters/$PARAMETERS_FILE_NAME \
     --capabilities CAPABILITY_NAMED_IAM \
     --region $REGION
 else
     aws cloudformation deploy \
     --stack-name $STACK_NAME \
-    --template-file cloudformation/$TEMPLATE_NAME.yaml \
-    --parameter-overrides file://parameters/$PARAMETERS_FILE_NAME.properties \
+    --template-file cloudformation/$TEMPLATE_NAME \
+    --parameter-overrides file://parameters/$PARAMETERS_FILE_NAME \
     --capabilities CAPABILITY_NAMED_IAM \
     --region $REGION \
     --no-execute-changeset
@@ -359,8 +359,8 @@ aws cloudformation wait stack-delete-complete \
   - `CHANGESET_MODE = True`, this will proceed to deploy a stack or execute changeset.
   - `CHANGESET_MODE = False`, this will only create a changeset without executing the changes.
   - `STACK_NAME = example-stack`, In this example the name of the stack is called *example-stack*.
-  - `PARAMETERS_FILE_NAME = example-stack-parameters`, this will pass the parameter values into the stack, `<parameter-file-name>.properties`. In our case we are using `example-stack-parameters.properties` under the `parameters/` folder.
-  - `TEMPLATE_NAME = S3-Bucket`, The name of this variable is equivalent to the format `<template-name>.yaml`. In this example the template name is called `S3-Bucket`, under the `cloudformation/` folder.
+  - `PARAMETERS_FILE_NAME = example-stack-parameters.properties`, this will pass the parameter values into the stack, the format of the file name follows `<parameter-file-name>.properties`. In our case we are using `example-stack-parameters.properties` under the `parameters/` folder.
+  - `TEMPLATE_NAME = S3-Bucket.yaml`, The name of this variable is equivalent to the format `<template-name>.yaml`. In this example the template name is called `S3-Bucket.yaml`, under the `cloudformation/` folder.
   - `CFN_CREDENTIALS_ID = arn:aws:iam::role/AWSCloudFormationStackExecutionRole`, This is the Unique ID that references the IAM Role ARN which is the account we will assume role using the [AmazonWebServicesCredentialsBinding](https://www.jenkins.io/doc/pipeline/steps/credentials-binding/) to perform our deployment based on the selected choice parameterized pipeline.
   - `REGION = us-east-1`, Enter the region you're using for the target account.
   - `TOGGLE = true`, If you do not set the toggle flag to true before executing the build action, it will automatically abort the pipeline for any action. This is to prevent accidental build execution changes from taking place without confirmation.
@@ -369,10 +369,10 @@ aws cloudformation wait stack-delete-complete \
 
 ```bash
 # Deploy a Stack or Execute a Changeset
-~ cloudformation/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}
+~ scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}
 
 # Delete a CloudFormation Stack
-~ cloudformation/delete-stack.sh ${STACK_NAME} ${REGION}
+~ scripts/delete-stack.sh ${STACK_NAME} ${REGION}
 ```
 
 - The steps in the pipeline will execute based on the parameter choices you select.
@@ -388,12 +388,13 @@ pipeline {
 
   parameters {
     string(name: 'STACK_NAME', defaultValue: 'example-stack', description: 'Enter the CloudFormation Stack Name.')
-    string(name: 'PARAMETERS_FILE_NAME', defaultValue: 'example-stack-parameters', description: 'Enter the Parameters File Name (Do not append any file extension type. e.g. .properties)')
-    string(name: 'TEMPLATE_NAME', defaultValue: 'S3-Bucket', description: 'Enter the CloudFormation Template Name (Do not append any file extension type. e.g. yml or .yaml)')
+    string(name: 'PARAMETERS_FILE_NAME', defaultValue: 'example-stack-parameters.properties', description: 'Enter the Parameters File Name (Must contain file extension type *.properties)')
+    string(name: 'TEMPLATE_NAME', defaultValue: 'S3-Bucket.yaml', description: 'Enter the CloudFormation Template Name (Must contain file extension type *.yaml)')
     credentials(name: 'CFN_CREDENTIALS_ID', defaultValue: '', description: 'AWS Account Role.', required: true)
     choice(
       name: 'REGION',
       choices: [
+          ' ',
           'us-east-1',
           'us-east-2'
           ],
@@ -453,7 +454,7 @@ pipeline {
               credentialsId: "${CFN_CREDENTIALS_ID}",
               accessKeyVariable: 'AWS_ACCESS_KEY_ID',
               secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'cloudformation/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
+                sh 'scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
             }
           }
         }
@@ -472,7 +473,7 @@ pipeline {
               credentialsId: "${CFN_CREDENTIALS_ID}",
               accessKeyVariable: 'AWS_ACCESS_KEY_ID',
               secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'cloudformation/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
+                sh 'scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
             }
           }
         }
@@ -491,7 +492,7 @@ pipeline {
               credentialsId: "${CFN_CREDENTIALS_ID}",
               accessKeyVariable: 'AWS_ACCESS_KEY_ID',
               secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'cloudformation/delete-stack.sh ${STACK_NAME} ${REGION}'
+                sh 'scripts/delete-stack.sh ${STACK_NAME} ${REGION}'
             }
           }
         }
@@ -507,12 +508,12 @@ pipeline {
 - Click Build with Parameters then select a build action.
 
 ![Image: img/jenkins-06.png](img/jenkins-06.png)
-*Figure 13. Build with Parameters*
+*Figure 9a. Build with Parameters*
 
 - You can examine the pipeline stages a bit further for the choice you selected. You can view more details of the stages below and verify in your AWS account that the CloudFormation stack was executed.
 
 ![Image: img/jenkins-07.png](img/jenkins-07.png)
-*Figure 14. Pipeline Stage View*
+*Figure 9b. Pipeline Stage View*
 
 - The Final Step is to execute your pipeline and watch the pods spin up dynamically in your terminal. As you can see below the jenkins agent pod spawned then terminated after the work was completed. You can watch this task on your own by executing the following command:
 
@@ -522,11 +523,11 @@ pipeline {
 ```
 
 ![Image: img/jenkins-08.png](img/jenkins-08.png)
-*Figure 15. Watch Jenkins Agent Pods Spawn*
+*Figure 10. Watch Jenkins Agent Pods Spawn*
 
 ## Code Repository
 
-- [Amazon EKS Jenkins Integration](https://gitlab.aws.dev/toussaiv/jenkins-cloudformation-example)
+- [Amazon EKS Jenkins Integration](https://github.com/aws-samples/jenkins-cloudformation-deployment-example.git)
 
 ## References
 
@@ -536,4 +537,3 @@ pipeline {
 ## Conclusion
 
 This post guided you through the process of building out Amazon EKS and integrating Jenkins to Orchestrate Workloads. We demonstrated how you can use this to deploy in multiple accounts with dynamic Jenkins agents and create alignment to your business with similar use cases. To learn more about Amazon EKS, head over to our [documentation](https://aws.amazon.com/eks/getting-started/) pages or explore our [console](https://console.aws.amazon.com/eks/home?region=us-east-1#).
->>>>>>> 444b93214daa13b435e75fb6f5873ec1881e0488
