@@ -172,12 +172,59 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 ~ ./build-image.sh "<AWS-ACCOUNT-ID>" "<REPOSITORY-NAME>" "<REGION-NAME>" "<BUILD-FOLDER-NAME>"
 ```
 
-- After you've built both images, navigate to the "k8s" directory and execute the manifest.yaml template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
+- After you've built both images, navigate to the "k8s" directory, modify the manifest file for the jenkins image, then execute the manifest.yaml template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
 
 ```bash
 # Update kubeconfig and set the context of the cluster
 ~ aws eks update-kubeconfig <CLUSTER-NAME> --region <REGION-NAME>
+```
 
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-manager
+  namespace: jenkins
+  labels:
+    app.kubernetes.io/name: jenkins
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jenkins
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jenkins
+    spec:
+      serviceAccountName: jenkins-manager # Enter the service account name being used
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+        runAsNonRoot: false
+      containers:
+        - name: jenkins-manager
+          image: <REPLACE WITH YOUR AWS ACCOUNT>.dkr.ecr.<REPLACE WITH YOU AWS REGION>.amazonaws.com/test-jenkins-manager:latest # Enter the jenkins manager image
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 4096Mi
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: manager
+            - containerPort: 50000
+              protocol: TCP
+              name: jnlp
+```
+
+```bash
 # Apply the kubernetes manifest to deploy the Jenkins manager application
 ~ kubectl apply -f manifest.yaml
 ```
