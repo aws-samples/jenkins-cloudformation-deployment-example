@@ -16,8 +16,6 @@ kind: ServiceAccount
 metadata:
   name: jenkins-agent
   namespace: jenkins
-  annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::241817123835:role/service-role/jenkins-app/jenkins-app-cloudformation-role # Enter your Role ARN for Jenkins Agent
 
 ---
 kind: Role
