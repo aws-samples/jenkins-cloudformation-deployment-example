@@ -171,7 +171,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 # Build a docker image and push to AWS ECR Repository
 ~ ./build-image.sh "<AWS-ACCOUNT-ID>" "<REPOSITORY-NAME>" "<REGION-NAME>" "<BUILD-FOLDER-NAME>"
 
-# Replace the Account ID and Region for Jenkins Master
+# Replace the Account ID and Region for Jenkins Manager
 ~ ./build-image.sh "<AWS-ACCOUNT-ID>" "test-jenkins-manager" "<REGION-NAME>" "jenkins-manager"
 
 # Replace the Account ID and Region for Jenkins Agent
