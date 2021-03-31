@@ -138,21 +138,9 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 
 ```json
 {
-    "Version": "2008-10-17",
-    "Statement": [
-      {
-        "Sid": "PermissionPolicy",
-        ...
-        ...
-        ...
-        "Principal": {
-            "AWS": "arn:aws:iam::<AWS-ACCOUNT-ID>:root"
-        },
-        ...
-        ...
-        ...
-      }
-    ]
+    "Principal": {
+        "AWS": "arn:aws:iam::<AWS-ACCOUNT-ID>:root"
+    }
 }
 ```
 
