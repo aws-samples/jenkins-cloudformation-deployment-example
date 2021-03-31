@@ -410,7 +410,7 @@ You may also adopt a tag-based approach (ABAC), by consistently tagging every re
 
 As per our understanding, there is a Jenkins manager that is running as a container in an EC2 compute instance which resides within a Shared AWS account. This Jenkins application represents individual pipelines deploying unique microservices that build & deploy to multiple environments in separate AWS accounts. The cross-account deployment uses the admin credentials of the target AWS account to do the deployment.
 
-With the above methodology, it is not a good practice to share the account credentials externally. Additionally, there is a need to eliminate the risk of the deployment errors and maintain application isolation within the same account.
+With this methodology, it is not a good practice to share the account credentials externally. Additionally, there is a need to eliminate the risk of the deployment errors and maintain application isolation within the same account.
 
 Note that the deployment steps are being run using aws cli’s and thus our solution will be focused around usage of aws cli.
 
