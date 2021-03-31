@@ -53,7 +53,7 @@ The following below is the minimum requirement in order to ensure this solution 
 
 Verify if the AWS CLI was installed by executing this command in your terminal `aws --version`. If you have an existing account, and your machine is configured for programmatic access, then you can proceed to the next step. In this walkthrough, we’ll be using Administrator privileges for our deployment. Additionally, Amazon ECR requires that users must have permission to make calls to the `ecr:GetAuthorizationToken`. These privileges are for demonstration purposes only and not recommended for production. Before proceeding, please ensure that you've properly install all the build requirements necessary.
 
-- Configure your AWS credentials with the associated region. The following steps show how you can do this.
+- Configure your [AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) with the associated region. The following steps show how you can do this.
 
 ```bash
 # Export access keys
@@ -108,7 +108,9 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 > --enable-ssm \
 > --managed \
 > --asg-access
+```
 
+```bash
 # Verify that EKS nodes are up running
 ~ kubectl get nodes
 ```
@@ -132,7 +134,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 
 ## Create AWS ECR Repository
 
-- This command will create an AWS ECR Repository and will reference the `ecr-permission-policy.json` that will allow permissions to push and pull images. You must update the ecr-permission-policy.json with the AWS Account ID before executing the script.
+- This command will create an AWS ECR Repository and will reference the [ECR repository policy example](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_within_account) that allows permission to push and pull images from the AWS Shared Services account. You must update the [ecr-permission-policy.json](/docker/ecr-permission-policy.json) key/value with the AWS Account ID before executing the script.
 
 ```json
 {
@@ -140,45 +142,57 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
     "Statement": [
       {
         "Sid": "PermissionPolicy",
-        "Effect": "Allow",
+        ...
+        ...
+        ...
         "Principal": {
-          "AWS": "arn:aws:iam::<AWS-ACCOUNT-ID>:root"
+            "AWS": "arn:aws:iam::<AWS-ACCOUNT-ID>:root"
         },
-        "Action": [
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:BatchGetImage",
-          "ecr:CompleteLayerUpload",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:InitiateLayerUpload",
-          "ecr:PutImage",
-          "ecr:UploadLayerPart"
-        ]
+        ...
+        ...
+        ...
       }
     ]
 }
 ```
+
+- [Create ECR Repository](/docker/create-ecr-repo.sh)
 
 ```bash
 # Create an AWS ECR Repository with repository permissions
 ~ ./create-ecr-repo.sh "<REPOSITORY-NAME>" "<REGION-NAME>"
 ```
 
+```bash
+# Replace the Repository Name and Region for Jenkins Manager
+~ ./create-ecr-repo.sh "test-jenkins-manager" "<REGION-NAME>"
+
+# Replace the Repository Name and Region for Jenkins Agent
+~ ./create-ecr-repo.sh "test-jenkins-agent" "<REGION-NAME>"
+```
+
 ## Build Docker Images
 
-- This command is used to build the custom Jenkins images for the Jenkins Manager and the Jenkins Agent. You must navigate to the `docker/` directory, then execute the command according to the required parameters with the AWS account ID, repository name, region, and the build folder name "jenkins manager" or "jenkins-agent" that resides in the current docker directory. The custom docker images will contain a set of starter package installs and the AWS CLI.
+- This command is used to build the custom Jenkins images for the Jenkins Manager and the Jenkins Agent. You must navigate to the `docker/` directory, then execute the command according to the required parameters with the AWS account ID, repository name, region, and the build folder name `jenkins-manager/` or `jenkins-agent/` that resides in the current docker directory. The custom docker images will contain a set of starter package installations.
+
+- [Build & Push Docker Image](/docker/build-image.sh)
 
 ```bash
 # Build a docker image and push to AWS ECR Repository
-~ ./build-image.sh "<AWS-ACCOUNT-ID>" "<REPOSITORY-NAME>" "<REGION-NAME>" "<BUILD-FOLDER-NAME>"
-
-# Replace the Account ID and Region for Jenkins Manager
-~ ./build-image.sh "<AWS-ACCOUNT-ID>" "test-jenkins-manager" "<REGION-NAME>" "jenkins-manager"
-
-# Replace the Account ID and Region for Jenkins Agent
-~ ./build-image.sh "<AWS-ACCOUNT-ID>" "test-jenkins-agent" "<REGION-NAME>" "jenkins-agent"
+~ ./build-image.sh "<AWS-ACCOUNT-ID>" "<REPOSITORY-NAME>" "<REGION-NAME>" "<BUILD-FOLDER-NAME>/"
 ```
 
-- After you've built both images, navigate to the "k8s" directory, modify the manifest file for the jenkins image, then execute the manifest.yaml template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
+```bash
+# Replace the Account ID and Region for Jenkins Manager
+~ ./build-image.sh "<AWS-ACCOUNT-ID>" "test-jenkins-manager" "<REGION-NAME>" "jenkins-manager/"
+
+# Replace the Account ID and Region for Jenkins Agent
+~ ./build-image.sh "<AWS-ACCOUNT-ID>" "test-jenkins-agent" "<REGION-NAME>" "jenkins-agent/"
+```
+
+## Deploy Jenkins Application
+
+- After you've built both images, navigate to the `k8s/` directory, modify the manifest file for the jenkins image, then execute the Jenkins [manifest.yaml](/k8s/manifest.yaml) template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
 
 ```bash
 # Update kubeconfig and set the context of the cluster
@@ -186,58 +200,28 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 ```
 
 ```yaml
+# Kubernetes YAML file
 apiVersion: apps/v1
 kind: Deployment
-metadata:
-  name: jenkins-manager
-  namespace: jenkins
-  labels:
-    app.kubernetes.io/name: jenkins
+...
+...
+...
 spec:
-  replicas: 1
-  strategy:
-    type: RollingUpdate
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: jenkins
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: jenkins
-    spec:
-      serviceAccountName: jenkins-manager # Enter the service account name being used
-      securityContext:
-        runAsUser: 0
-        fsGroup: 0
-        runAsNonRoot: false
-      containers:
-        - name: jenkins-manager
-          image: <REPLACE WITH YOUR AWS ACCOUNT>.dkr.ecr.<REPLACE WITH YOU AWS REGION>.amazonaws.com/test-jenkins-manager:latest # Enter the jenkins manager image
-          imagePullPolicy: Always
-          resources:
-            requests:
-              cpu: 500m
-              memory: 512Mi
-            limits:
-              cpu: "1"
-              memory: 4096Mi
-          ports:
-            - containerPort: 8080
-              protocol: TCP
-              name: manager
-            - containerPort: 50000
-              protocol: TCP
-              name: jnlp
+  serviceAccountName: jenkins-manager # Enter the service account name being used
+  containers:
+  - name: jenkins-manager
+    image: <AWS-ACCOUNT-ID>.dkr.ecr.<AWS-REGION>.amazonaws.com/test-jenkins-manager:latest # Enter the jenkins manager image
+...
+...
+...
 ```
 
 ```bash
-# Apply the kubernetes manifest to deploy the Jenkins manager application
+# Apply the kubernetes manifest to deploy the Jenkins Manager application
 ~ kubectl apply -f manifest.yaml
 ```
 
-## Jenkins
-
-- Run the following command to make sure your EKS pods are ready and running. We have 1 pod, hence the 2/2 output below. Fetch and navigate to the Load Balancer URL. The next step is to get the password to login to Jenkins as the **admin** user. Run the following command below to get the auto generated initial Jenkins password. Please update your password after logging in.
+- Run the following command to make sure your EKS pods are ready and running. We have 1 pod, hence the 1/1 output below. Fetch and navigate to the Load Balancer URL. The next step is to get the password to login to Jenkins as the **admin** user. Run the following command below to get the auto generated initial Jenkins password. Please update your password after logging in.
 
 ```bash
 # Fetch the Application URL or navigate to the AWS Console for the Load Balancer
@@ -300,9 +284,9 @@ spec:
 ![Image: img/jenkins-05.png](img/jenkins-05.png)
 *Figure 8. Create a Pipeline*
 
-## Examine and modify code repository files
+## Configure Jenkins Agent
 
-- Setup a Kubernetes YAML template. In this example, we will be using the `k8sPodTemplate.yaml` file stored in the `k8s/` folder.
+- Setup a Kubernetes YAML template. In this example, we will be using the [k8sPodTemplate.yaml](/k8s/k8sPodTemplate.yaml) file stored in the `k8s/` folder.
 - The custom Jenkins Agent image we built earlier uses the Jenkins inbound-agent as the base image with the AWS CLI installed. Specify the container image in the file that will source the image with the associated AWS account and region.
 - You can keep everything else as default, but depending on you specifications you can choose to modify the amount of resources that must be allocated.
 
@@ -310,103 +294,38 @@ spec:
 # Kubernetes YAML file
 apiVersion: v1
 kind: Pod
-metadata:
-  labels:
-    some-label: jenkins-pipeline
+...
+...
+...
 spec:
   serviceAccountName: jenkins-agent # Enter the service account name being used
-  securityContext:
-    runAsUser: 0
-    fsGroup: 0
-    runAsNonRoot: false
   containers:
   - name: jenkins-agent
-    image: <REPLACE WITH YOUR AWS ACCOUNT>.dkr.ecr.<REPLACE WITH YOU AWS REGION>.amazonaws.com/test-jenkins-agent:latest # Enter the jenkins inbound agent image.
-    command:
-    - cat
-    tty: true
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: "1"
-        memory: 1024Mi
+    image: <AWS-ACCOUNT-ID>.dkr.ecr.<AWS-REGION>.amazonaws.com/test-jenkins-agent:latest # Enter the jenkins inbound agent image.
+...
+...
+...
 ```
 
-- The `deploy-stack.sh` accepts four different parameters. The first parameter set is the stack name. The second parameter is the name of the parameters file name which resides in the `parameters/` folder. The third parameter is the name of the template which reside in the `cloudformation/` folder. The fourth parameter is the boolean condition to decide whether to execute the deployment right away or create a changeset. The fifth parameter is the region of the target account where the stack should be deployed. I will show an example of how this is used later.
+## CloudFormation Execution Scripts
+
+- The [deploy-stack.sh](/scripts/deploy-stack.sh) accepts four different parameters. The first parameter set is the stack name. The second parameter is the name of the parameters file name which resides in the `parameters/` folder. The third parameter is the name of the template which reside in the `cloudformation/` folder. The fourth parameter is the boolean condition to decide whether to execute the deployment right away or create a changeset. The fifth parameter is the region of the target account where the stack should be deployed.
 
 ```bash
-#!/bin/bash
-
-# Please ensure that you have the correct AWS credentials configured.
-# Enter the name of the stack, the parameters file name, the template name, then changeset condition, and finally the region name.
-
-if [ $# -ne 5 ]; then
-    echo "Enter stack name, parameters file name, template file name to create, set changeset value (true or false), and enter region name. "
-    exit 0
-else
-    STACK_NAME=$1
-    PARAMETERS_FILE_NAME=$2
-    TEMPLATE_NAME=$3
-    CHANGESET_MODE=$4
-    REGION=$5
-fi
-
-if [[ "cloudformation/"$TEMPLATE_NAME != *.yaml ]]; then
-    echo "CloudFormation template $TEMPLATE_NAME does not exist. Make sure the extension is *.yaml and not (*.yml)"
-    exit 0
-fi
-
-if [[ "parameters/"$PARAMETERS_FILE_NAME != *.properties ]]; then
-    echo "CloudFormation parameters $PARAMETERS_FILE_NAME does not exist"
-    exit 0
-fi
-
-if [[ $CHANGESET_MODE == "true" ]] || [[ $CHANGESET_MODE == "True" ]]; then
-    aws cloudformation deploy \
-    --stack-name $STACK_NAME \
-    --template-file cloudformation/$TEMPLATE_NAME \
-    --parameter-overrides file://parameters/$PARAMETERS_FILE_NAME \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --region $REGION
-else
-    aws cloudformation deploy \
-    --stack-name $STACK_NAME \
-    --template-file cloudformation/$TEMPLATE_NAME \
-    --parameter-overrides file://parameters/$PARAMETERS_FILE_NAME \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --region $REGION \
-    --no-execute-changeset
-fi
+# Deploy a Stack or Execute a Changeset
+~ scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}
 ```
 
-- The `delete-stack.sh` accepts the name and region of the stack that was created to delete the stack. I will show an example of how this is used later.
+- The [delete-stack.sh](/scripts/delete-stack.sh) accepts the name and region of the stack that was created to delete the stack.
 
 ```bash
-#!/bin/bash
-
-# Please ensure that you have the correct AWS credentials configured.
-# Enter the name of the stack you want to delete, then enter the name of the region.
-
-if [ $# -ne 2 ]; then
-    echo "Enter stack name to delete & region name."
-    exit 0
-else
-    STACK_NAME=$1
-    REGION=$2
-fi
-
-aws cloudformation delete-stack \
---stack-name $STACK_NAME \
---region $REGION
-
-aws cloudformation wait stack-delete-complete \
---stack-name $STACK_NAME \
---region $REGION
+# Delete a CloudFormation Stack
+~ scripts/delete-stack.sh ${STACK_NAME} ${REGION}
 ```
 
-- In this `Jenkinsfile` pipeline, the `k8sPodTemplate.yaml` is used to specify the kubernetes pod details and the inbound-agent that will be used to run the pipeline.
+## Jenkinsfile
+
+- In this `Jenkinsfile`, the individual pipeline build jobs will deploy individual microservices. The `k8sPodTemplate.yaml` is used to specify the kubernetes pod details and the inbound-agent that will be used to run the pipeline.
 - This pipeline stage will consist of the several stages for stack deployment, create changeset, execute changeset, and stack deletion. The `deploy-stack.sh` will execute when selected via parameters, and likewise the `delete-stack.sh` will be executed when selected by the parameters.
 - If you observe closely, there are several variables used within the pipeline stage actions below
   - `CHANGESET_MODE = True`, this will proceed to deploy a stack or execute changeset.
@@ -417,144 +336,6 @@ aws cloudformation wait stack-delete-complete \
   - `CFN_CREDENTIALS_ID = arn:aws:iam::role/AWSCloudFormationStackExecutionRole`, This is the Unique ID that references the IAM Role ARN which is the account we will assume role using the [AmazonWebServicesCredentialsBinding](https://www.jenkins.io/doc/pipeline/steps/credentials-binding/) to perform our deployment based on the selected choice parameterized pipeline.
   - `REGION = us-east-1`, Enter the region you're using for the target account.
   - `TOGGLE = true`, If you do not set the toggle flag to true before executing the build action, it will automatically abort the pipeline for any action. This is to prevent accidental build execution changes from taking place without confirmation.
-
-- The commands below will utilize the `deploy-stack.sh` and `delete-stack.sh` files we showed earlier.
-
-```bash
-# Deploy a Stack or Execute a Changeset
-~ scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}
-
-# Delete a CloudFormation Stack
-~ scripts/delete-stack.sh ${STACK_NAME} ${REGION}
-```
-
-- The steps in the pipeline will execute based on the parameter choices you select.
-
-```groovy
-pipeline {
-  agent {
-    kubernetes {
-    // This is a YAML representation of the Pod, to allow setting any values not supported as fields.
-      yamlFile 'k8s/k8sPodTemplate.yaml' // Declarative agents can be defined from YAML.
-    }
-  }
-
-  parameters {
-    string(name: 'STACK_NAME', defaultValue: 'example-stack', description: 'Enter the CloudFormation Stack Name.')
-    string(name: 'PARAMETERS_FILE_NAME', defaultValue: 'example-stack-parameters.properties', description: 'Enter the Parameters File Name (Must contain file extension type *.properties)')
-    string(name: 'TEMPLATE_NAME', defaultValue: 'S3-Bucket.yaml', description: 'Enter the CloudFormation Template Name (Must contain file extension type *.yaml)')
-    credentials(name: 'CFN_CREDENTIALS_ID', defaultValue: '', description: 'AWS Account Role.', required: true)
-    choice(
-      name: 'REGION',
-      choices: [
-          ' ',
-          'us-east-1',
-          'us-east-2'
-          ],
-      description: 'AWS Account Region'
-    )
-    choice(
-      name: 'ACTION',
-      choices: ['create-changeset', 'execute-changeset', 'deploy-stack', 'delete-stack'],
-      description: 'CloudFormation Actions'
-    )
-    booleanParam(name: 'TOGGLE', defaultValue: false, description: 'Are you sure you want to perform this action?')
-  }
-
-  stages {
-
-    stage('check version') {
-      steps {
-        ansiColor('xterm') {
-          container("jenkins-agent") {
-            sh 'aws --version'
-            sh 'aws sts get-caller-identity'
-          }
-        }
-      }
-    }
-
-    stage('action') {
-      when {
-        expression { params.ACTION == 'create-changeset' || params.ACTION == 'execute-changeset' || params.ACTION == 'deploy-stack' || params.ACTION == 'delete-stack'}
-      }
-      steps {
-        ansiColor('xterm') {
-          script {
-            if (!params.TOGGLE) {
-                currentBuild.result = 'ABORTED' //If you do not set the toggle flag to true before executing the build action, it will automatically abort the pipeline for any action.
-            } else {
-                if (params.ACTION == 'create-changeset') {
-                    env.CHANGESET_MODE = false
-                } else {
-                    env.CHANGESET_MODE = true
-                }
-            }
-          }
-        }
-      }
-    }
-
-    stage('stack-execution') {
-      when {
-        expression { params.ACTION == 'deploy-stack' || params.ACTION == 'execute-changeset' }
-      }
-      steps {
-        ansiColor('xterm') {
-          container("jenkins-agent") {
-            withCredentials([[
-              $class: 'AmazonWebServicesCredentialsBinding',
-              credentialsId: "${CFN_CREDENTIALS_ID}",
-              accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-              secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
-            }
-          }
-        }
-      }
-    }
-
-    stage('create-changeset') {
-      when {
-        expression { params.ACTION == 'create-changeset' }
-      }
-      steps {
-        ansiColor('xterm') {
-          container("jenkins-agent") {
-            withCredentials([[
-              $class: 'AmazonWebServicesCredentialsBinding',
-              credentialsId: "${CFN_CREDENTIALS_ID}",
-              accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-              secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}'
-            }
-          }
-        }
-      }
-    }
-
-    stage('delete-stack') {
-      when {
-        expression { params.ACTION == 'delete-stack' }
-      }
-      steps {
-        ansiColor('xterm') {
-          container("jenkins-agent") {
-            withCredentials([[
-              $class: 'AmazonWebServicesCredentialsBinding',
-              credentialsId: "${CFN_CREDENTIALS_ID}",
-              accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-              secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                sh 'scripts/delete-stack.sh ${STACK_NAME} ${REGION}'
-            }
-          }
-        }
-      }
-    }
-
-  }
-}
-```
 
 ## Jenkins Pipeline: Execute a pipeline
 
@@ -578,6 +359,63 @@ pipeline {
 ![Image: img/jenkins-08.png](img/jenkins-08.png)
 *Figure 10. Watch Jenkins Agent Pods Spawn*
 
+## Security Considerations
+
+This blog provides a high level overview of the best practices for cross-account deployment and maintaining the isolation between the applications. We evaluated the cross-account application deployment permissions and will describe the current state and what you should avoid. As part of the security best practice we will maintain isolation among multiple apps that are deployed in these environments. eg. Pipeline 1 does not deploy to the infrastructure belonging to Pipeline 2.
+
+### Best Practice - *Current State*
+
+We implemented the use of cross-account roles that can restrict unauthorized access across build jobs. Behind this approach, we will utilize the concept of assume-role that will enable the requesting role to obtain temporary credentials (from STS service) of the target role and execute actions permitted by the target
+role. This is a safer approach than using hard-coded credentials. The requesting role could be either the inherited EC2 instance role OR specific user credentials, but in our case we are using the inherited EC2 instance role.
+
+For ease of understanding, we will refer the target-role as execution-role below.
+
+![Image: img/current-state.png](img/current-state.png)
+*Figure 11. Current State*
+
+#### *Step 1*
+
+As per the security best practice of assigning minimum privileges, it is required to first create execution role in IAM in the target account that has deployment permissions (either via CloudFormation OR via CLI’s). eg. app-dev-role in Dev account and app-prod-role in Prod account.
+
+#### *Step 2*
+
+For each of those roles, we configure a trust relationship with the parent account ID (Shared Services account). This will enable any roles in the Shared Services account (with assume-role permission) to assume the role of the execution role and deploy it on respective hosting infrastructure. eg. app-dev-role in Dev account will be a common execution role that will deploy various apps across infrastructure.
+
+#### *Step 3*
+
+Then we create a local role in the Shared Services account and configure credentials within Jenkins to be utilized by the Build Jobs. Provide the job with the assume-role permissions and specify the list of ARN’s across all the accounts. Alternatively, the inherited EC2 instance role can also be utilized to assume the role of execution-role.
+
+### Further Isolation - *Security Hardening*
+
+This approach implements guard-rails to enforce the application isolation in an account. However, if using CloudFormation, the security violation risk is low (due to the automation) and configuration overhead is high.
+
+![Image: img/solution-02.png](img/solution-02.png)
+*Figure 12. Security Hardening*
+
+#### *Step 1*
+
+As per the security best practice of assigning minimum privileges, it is required to first create execution roles in IAM in the target account for each application hosting infrastructure. Thus we create app1-dev-role and app2-dev-role in the Dev account and restrict those roles to access only respective hosting infrastructure. Similarly, we create app1-prod-role and app2-prod-role in Prod account and restrict each of them to their respective hosting infrastructure.
+
+#### *Step 2*
+
+For each of those roles, we configure trust relationship with the parent account ID (Shared Services account). This time, we will add a condition to check for the external ID. This will enable specific roles using the same external ID in the Shared account (with assume-role permission) to assume the role of the execution role and deploy it on respective hosting infrastructure.
+
+#### *Step 3*
+
+Then we create a local user in the Shared account and configure credentials within Jenkins to be utilized by the Build Jobs. Provide the job with the assume-role permissions and specify the list of ARN’s across all the accounts. The AWS CLI that will execute the deployment would be hard-coded with the external ID to ensure that it assumes the correct execution-role to carry out deployment.
+
+You may also adopt a tag-based approach (ABAC), by consistently tagging every resource with identity to differentiate across applications and utilizing policy conditions to enforce the permissions.
+
+### *Requirement*
+
+As per our understanding, there is a Jenkins manager that is running as a container in an EC2 compute instance which resides within a Shared AWS account. This Jenkins application represents individual pipelines deploying unique microservices that build & deploy to multiple environments in separate AWS accounts. The cross-account deployment uses the admin credentials of the target AWS account to do the deployment.
+
+With the above methodology, it is not a good practice to share the account credentials externally. Additionally, there is a need to eliminate the risk of the deployment errors and maintain application isolation within the same account.
+
+Note that the deployment steps are being run using aws cli’s and thus our solution will be focused around usage of aws cli.
+
+The risk is much lower when using CloudFormation / CDK to carry out deployments because the aws CLI’s executed from the build jobs will specify stack names as parametrized inputs and very low probability of stack-name error. However, it is still not a good practice to use admin credentials, that too of the target account.
+
 ## Code Repository
 
 - [Amazon EKS Jenkins Integration](https://github.com/aws-samples/jenkins-cloudformation-deployment-example.git)
@@ -589,4 +427,4 @@ pipeline {
 
 ## Conclusion
 
-This post guided you through the process of building out Amazon EKS and integrating Jenkins to Orchestrate Workloads. We demonstrated how you can use this to deploy in multiple accounts with dynamic Jenkins agents and create alignment to your business with similar use cases. To learn more about Amazon EKS, head over to our [documentation](https://aws.amazon.com/eks/getting-started/) pages or explore our [console](https://console.aws.amazon.com/eks/home?region=us-east-1#).
+This post guided you through the process of building out Amazon EKS and integrating Jenkins to orchestrate workloads. We demonstrated how you can use this to deploy securely in multiple accounts with dynamic Jenkins agents and create alignment to your business with similar use cases. To learn more about Amazon EKS, head over to our [documentation](https://aws.amazon.com/eks/getting-started/) pages or explore our [console](https://console.aws.amazon.com/eks/home?region=us-east-1#).
