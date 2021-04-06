@@ -134,7 +134,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 
 ## Create AWS ECR Repository
 
-- This command will create an AWS ECR Repository and will reference the [ECR repository policy example](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_within_account) that allows permission to push and pull images from the AWS Shared Services account. You must update the [ecr-permission-policy.json](/docker/ecr-permission-policy.json) key/value with the AWS Account ID before executing the script.
+- This command will create an AWS ECR Repository and will reference the [ECR repository policy example](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_within_account) that allows permission to push and pull images from the AWS Shared Services account. You must update the [ecr-permission-policy.json](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/docker/ecr-permission-policy.json) key/value with the AWS Account ID before executing the script.
 
 ```json
 {
@@ -144,7 +144,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 }
 ```
 
-- [Create ECR Repository](/docker/create-ecr-repo.sh)
+- [Create ECR Repository](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/docker/create-ecr-repo.sh)
 
 ```bash
 # Create an AWS ECR Repository with repository permissions
@@ -163,7 +163,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 
 - This command is used to build the custom Jenkins images for the Jenkins Manager and the Jenkins Agent. You must navigate to the `docker/` directory, then execute the command according to the required parameters with the AWS account ID, repository name, region, and the build folder name `jenkins-manager/` or `jenkins-agent/` that resides in the current docker directory. The custom docker images will contain a set of starter package installations.
 
-- [Build & Push Docker Image](/docker/build-image.sh)
+- [Build & Push Docker Image](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/docker/build-image.sh)
 
 ```bash
 # Build a docker image and push to AWS ECR Repository
@@ -180,7 +180,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 
 ## Deploy Jenkins Application
 
-- After you've built both images, navigate to the `k8s/` directory, modify the manifest file for the jenkins image, then execute the Jenkins [manifest.yaml](/k8s/manifest.yaml) template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
+- After you've built both images, navigate to the `k8s/` directory, modify the manifest file for the jenkins image, then execute the Jenkins [manifest.yaml](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/k8s/manifest.yaml) template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
 
 ```bash
 # Update kubeconfig and set the context of the cluster
@@ -274,7 +274,7 @@ spec:
 
 ## Configure Jenkins Agent
 
-- Setup a Kubernetes YAML template. In this example, we will be using the [k8sPodTemplate.yaml](/k8s/k8sPodTemplate.yaml) file stored in the `k8s/` folder.
+- Setup a Kubernetes YAML template. In this example, we will be using the [k8sPodTemplate.yaml](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/k8s/k8sPodTemplate.yaml) file stored in the `k8s/` folder.
 - The custom Jenkins Agent image we built earlier uses the Jenkins inbound-agent as the base image with the AWS CLI installed. Specify the container image in the file that will source the image with the associated AWS account and region.
 - You can keep everything else as default, but depending on you specifications you can choose to modify the amount of resources that must be allocated.
 
@@ -297,14 +297,14 @@ spec:
 
 ## CloudFormation Execution Scripts
 
-- The [deploy-stack.sh](/scripts/deploy-stack.sh) accepts four different parameters. The first parameter set is the stack name. The second parameter is the name of the parameters file name which resides in the `parameters/` folder. The third parameter is the name of the template which reside in the `cloudformation/` folder. The fourth parameter is the boolean condition to decide whether to execute the deployment right away or create a changeset. The fifth parameter is the region of the target account where the stack should be deployed.
+- The [deploy-stack.sh](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/scripts/deploy-stack.sh) accepts four different parameters. The first parameter set is the stack name. The second parameter is the name of the parameters file name which resides in the `parameters/` folder. The third parameter is the name of the template which reside in the `cloudformation/` folder. The fourth parameter is the boolean condition to decide whether to execute the deployment right away or create a changeset. The fifth parameter is the region of the target account where the stack should be deployed.
 
 ```bash
 # Deploy a Stack or Execute a Changeset
 ~ scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}
 ```
 
-- The [delete-stack.sh](/scripts/delete-stack.sh) accepts the name and region of the stack that was created to delete the stack.
+- The [delete-stack.sh](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/scripts/delete-stack.sh) accepts the name and region of the stack that was created to delete the stack.
 
 ```bash
 # Delete a CloudFormation Stack
