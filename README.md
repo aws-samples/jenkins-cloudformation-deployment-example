@@ -187,20 +187,20 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 - Build a docker image and push to the AWS ECR Repository. Replace the Repository Name and Region for Jenkins Manager.
 
 ```bash
-export LC_CTYPE=C
-HASH=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)
+~ export LC_CTYPE=C
+~ HASH=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)
 
-AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-REPOSITORY_NAME="test-jenkins-manager"
-REGION="us-east-1"
-FOLDER_NAME="jenkins-manager/"
-IMG_TAG=$HASH
+~ AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+~ REPOSITORY_NAME="test-jenkins-manager"
+~ REGION="us-east-1"
+~ FOLDER_NAME="jenkins-manager/"
+~ IMG_TAG=$HASH
 
 # Docker Login | ECR Login
 ~ aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
 # # Build Image
-REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME
+~ REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME
 ~ docker build -t $REPOSITORY_URI:latest $FOLDER_NAME
 
 # # Tag Image
@@ -214,20 +214,20 @@ REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME
 - Build a docker image and push to the AWS ECR Repository. Replace the Repository Name and Region for the Jenkins Agent.
 
 ```bash
-export LC_CTYPE=C
-HASH=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)
+~ export LC_CTYPE=C
+~ HASH=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)
 
-AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-REPOSITORY_NAME="test-jenkins-agent"
-REGION="us-east-1"
-FOLDER_NAME="jenkins-agent/"
-IMG_TAG=$HASH
+~ AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+~ REPOSITORY_NAME="test-jenkins-agent"
+~ REGION="us-east-1"
+~ FOLDER_NAME="jenkins-agent/"
+~ IMG_TAG=$HASH
 
 # Docker Login | ECR Login
 ~ aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
 # # Build Image
-REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME
+~ REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME
 ~ docker build -t $REPOSITORY_URI:latest $FOLDER_NAME
 
 # # Tag Image
