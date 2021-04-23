@@ -33,7 +33,7 @@ To accomplish this deployment workflow we’re going to do the following:
 
 - Jenkins Application UI
   1. Jenkins Plugins - Install and configure the [Kubernetes Plugin](https://plugins.jenkins.io/kubernetes/) and [CloudBees AWS Credentials Plugin](https://plugins.jenkins.io/aws-credentials/) from Manage Plugins *(You will not have to manually install this since it will be packaged and installed as part of the Jenkins image build).*
-  2. Jenkins Pipeline Example - Clone the code repository, then use the Jenkinsfile which will use a CloudFormation template to create an S3 Bucket in the Target account with Jenkins parameterized pipeline.
+  2. Jenkins Pipeline Example - Fetch the Jenkinsfile to deploy an S3 Bucket with CloudFormation in the Target account using a Jenkins parameterized pipeline.
 
 ## Account Prerequisite(s)
 
@@ -110,6 +110,8 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 ```
 
 ## Create Cross-Account IAM Roles
+
+Cross-account IAM roles allow customers to securely grant access to AWS resources in their account to a third party, while retaining the ability to control and audit who is accessing their AWS account.
 
 - Create an IAM role that has a common name in each target account. The role name we've created for use is called `AWSCloudFormationStackExecutionRole`. The role must have permissions to perform CloudFormation actions and any actions pertaining to the resources that will be created. In our case, we will be creating and S3 Bucket using CloudFormation.
 - This IAM role must also have an established trust relationship to the Shared Services account. In this case, the Jenkins Agent will be granted the ability to assume the role of the particular target account from the Shared Services account. See the images below.
