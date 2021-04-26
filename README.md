@@ -87,22 +87,9 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 
 ## Create EKS Cluster
 
-- Execute the following command below. Make sure your AWS configuration is pointing to the correct region you want EKS deployed. If you do not specify the region, the AWS Profile you setup earlier will be used as the default for where the cluster will reside. The following parameters is an example which will vary based on your preference. If you choose to deploy with a different name, region, zone, or node capacity please modify accordingly.
+Verify that your AWS configuration is pointing to the correct region you want EKS deployed. If you do not specify the region, the AWS Profile you setup earlier will be used as the default for where the cluster will reside. The following parameters is an example which will vary based on your preference. If you choose to deploy with a different name, region, zone, or node capacity please modify accordingly.
 
-```bash
-# Create the EKS Cluster
-~ eksctl create cluster \
-> --name <CLUSTER-NAME> \
-> --region <REGION> \
-> --with-oidc \
-> --zones "<AVAILABILITY-ZONE-1>,<AVAILABILITY-ZONE-2>" \
-> --nodegroup-name <NODEGROUP-NAME> \
-> --nodes-min 2 \
-> --nodes-max 4 \
-> --enable-ssm \
-> --managed \
-> --asg-access
-```
+- [Create an EKS Cluster using eksctl](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/k8s/EKS.md)
 
 ```bash
 # Verify that EKS nodes are up running
@@ -111,7 +98,7 @@ Verify if the AWS CLI was installed by executing this command in your terminal `
 
 ## Create Cross-Account IAM Roles
 
-Cross-account IAM roles allow customers to securely grant access to AWS resources in their account to a third party, while retaining the ability to control and audit who is accessing their AWS account.
+Cross-account IAM roles allow customers to securely grant access to AWS resources in their account to a third party, while retaining the ability to control and audit who is accessing their AWS account. The cross-account IAM role includes a trust policy that allows AWS identities in another AWS account to assume the role. This allows me to create a role in one AWS account that delegates specific permissions to another AWS account.
 
 - Create an IAM role that has a common name in each target account. The role name we've created for use is called `AWSCloudFormationStackExecutionRole`. The role must have permissions to perform CloudFormation actions and any actions pertaining to the resources that will be created. In our case, we will be creating and S3 Bucket using CloudFormation.
 - This IAM role must also have an established trust relationship to the Shared Services account. In this case, the Jenkins Agent will be granted the ability to assume the role of the particular target account from the Shared Services account. See the images below.
@@ -136,109 +123,15 @@ Cross-account IAM roles allow customers to securely grant access to AWS resource
 
 ## Create AWS ECR Repository
 
-- This command will create an AWS ECR Repository and will reference the [ECR repository policy example](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_within_account) that allows permission to push and pull images from the AWS Shared Services account. You must update the [ecr-permission-policy.json](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/docker/ecr-permission-policy.json) key/value with the AWS Account ID before executing the script.
+Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent by referencing the [ECR repository policy example](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_within_account) that allows permission to push and pull images from the AWS Shared Services account. You must update the [ecr-permission-policy.json](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/docker/ecr-permission-policy.json) key/value with the AWS Account ID before executing commands.
 
-```json
-{
-    "Principal": {
-        "AWS": "arn:aws:iam::<AWS-ACCOUNT-ID>:root"
-    }
-}
-```
-
-- Replace the Repository Name and Region to create an AWS ECR Repository with repository permissions for Jenkins Manager
-
-```bash
-~ REPOSITORY_NAME="test-jenkins-manager"
-~ REGION="us-east-1"
-
-~ aws ecr create-repository \
---repository-name $REPOSITORY_NAME \
---image-scanning-configuration scanOnPush=true \
---region $REGION
-
-# You must replace and enter the ACCOUNT ID in the JSON permission policy.
-~ aws ecr set-repository-policy \
---repository-name $REPOSITORY_NAME \
---policy-text file://ecr-permission-policy.json \
---region $REGION
-```
-
-- Replace the Repository Name and Region to create an AWS ECR Repository with repository permissions for Jenkins Agent
-
-```bash
-~ REPOSITORY_NAME="test-jenkins-agent"
-~ REGION="us-east-1"
-
-~ aws ecr create-repository \
---repository-name $REPOSITORY_NAME \
---image-scanning-configuration scanOnPush=true \
---region $REGION
-
-# You must replace and enter the ACCOUNT ID in the JSON permission policy.
-~ aws ecr set-repository-policy \
---repository-name $REPOSITORY_NAME \
---policy-text file://ecr-permission-policy.json \
---region $REGION
-```
+- [Create AWS ECR Repository for Jenkins Manager and Jenkins Agent](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/docker/ECR.md)
 
 ## Build Docker Images
 
-- This command is used to build the custom Jenkins images for the Jenkins Manager and the Jenkins Agent. You must navigate to the `docker/` directory, then execute the command according to the required parameters with the AWS account ID, repository name, region, and the build folder name `jenkins-manager/` or `jenkins-agent/` that resides in the current docker directory. The custom docker images will contain a set of starter package installations.
+Build the custom docker images for the Jenkins Manager and the Jenkins Agent, then push to the images to AWS ECR Repository. You must navigate to the `docker/` directory, then execute the command according to the required parameters with the AWS account ID, repository name, region, and the build folder name `jenkins-manager/` or `jenkins-agent/` that resides in the current docker directory. The custom docker images will contain a set of starter package installations.
 
-- Build a docker image and push to the AWS ECR Repository. Replace the Repository Name and Region for Jenkins Manager.
-
-```bash
-~ export LC_CTYPE=C
-~ HASH=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)
-
-~ AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-~ REPOSITORY_NAME="test-jenkins-manager"
-~ REGION="us-east-1"
-~ FOLDER_NAME="jenkins-manager/"
-~ IMG_TAG=$HASH
-
-# Docker Login | ECR Login
-~ aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-# # Build Image
-~ REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME
-~ docker build -t $REPOSITORY_URI:latest $FOLDER_NAME
-
-# # Tag Image
-~ docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMG_TAG
-
-# # Push Image
-~ docker push $REPOSITORY_URI:latest
-~ docker push $REPOSITORY_URI:$IMG_TAG
-```
-
-- Build a docker image and push to the AWS ECR Repository. Replace the Repository Name and Region for the Jenkins Agent.
-
-```bash
-~ export LC_CTYPE=C
-~ HASH=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)
-
-~ AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-~ REPOSITORY_NAME="test-jenkins-agent"
-~ REGION="us-east-1"
-~ FOLDER_NAME="jenkins-agent/"
-~ IMG_TAG=$HASH
-
-# Docker Login | ECR Login
-~ aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
-
-# # Build Image
-~ REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME
-~ docker build -t $REPOSITORY_URI:latest $FOLDER_NAME
-
-# # Tag Image
-~ docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMG_TAG
-
-# # Push Image
-~ docker push $REPOSITORY_URI:latest
-~ docker push $REPOSITORY_URI:$IMG_TAG
-```
+- [Build and push the Jenkins Manager and Jenkins Agent docker images to the AWS ECR Repository](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/docker/BUILDIMAGE.md)
 
 ## Deploy Jenkins Application
 
