@@ -135,36 +135,9 @@ Build the custom docker images for the Jenkins Manager and the Jenkins Agent, th
 
 ## Deploy Jenkins Application
 
-- After you've built both images, navigate to the `k8s/` directory, modify the manifest file for the jenkins image, then execute the Jenkins [manifest.yaml](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/k8s/manifest.yaml) template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
+After you've built both images, navigate to the `k8s/` directory, modify the manifest file for the jenkins image, then execute the Jenkins [manifest.yaml](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/k8s/manifest.yaml) template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
 
-```bash
-# Update kubeconfig and set the context of the cluster
-~ aws eks update-kubeconfig <CLUSTER-NAME> --region <REGION-NAME>
-```
-
-```yaml
-# Kubernetes YAML file
-apiVersion: apps/v1
-kind: Deployment
-...
-...
-...
-spec:
-  serviceAccountName: jenkins-manager # Enter the service account name being used
-  containers:
-  - name: jenkins-manager
-    image: <AWS-ACCOUNT-ID>.dkr.ecr.<AWS-REGION>.amazonaws.com/test-jenkins-manager:latest # Enter the jenkins manager image
-...
-...
-...
-```
-
-```bash
-# Apply the kubernetes manifest to deploy the Jenkins Manager application
-~ kubectl apply -f manifest.yaml
-```
-
-- Run the following command to make sure your EKS pods are ready and running. We have 1 pod, hence the 1/1 output below. Fetch and navigate to the Load Balancer URL. The next step is to get the password to login to Jenkins as the **admin** user. Run the following command below to get the auto generated initial Jenkins password. Please update your password after logging in.
+- [Deploy the Jenkins Application to the EKS Cluster](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/feature/k8s/MANAGER.md)
 
 ```bash
 # Fetch the Application URL or navigate to the AWS Console for the Load Balancer
@@ -229,26 +202,9 @@ spec:
 
 ## Configure Jenkins Agent
 
-- Setup a Kubernetes YAML template. In this example, we will be using the [k8sPodTemplate.yaml](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/k8s/k8sPodTemplate.yaml) file stored in the `k8s/` folder.
-- The custom Jenkins Agent image we built earlier uses the Jenkins inbound-agent as the base image with the AWS CLI installed. Specify the container image in the file that will source the image with the associated AWS account and region.
-- You can keep everything else as default, but depending on you specifications you can choose to modify the amount of resources that must be allocated.
+Setup a Kubernetes YAML template after you've built the agent image. In this example, we will be using the [k8sPodTemplate.yaml](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/k8s/k8sPodTemplate.yaml) file stored in the `k8s/` folder.
 
-```yaml
-# Kubernetes YAML file
-apiVersion: v1
-kind: Pod
-...
-...
-...
-spec:
-  serviceAccountName: jenkins-agent # Enter the service account name being used
-  containers:
-  - name: jenkins-agent
-    image: <AWS-ACCOUNT-ID>.dkr.ecr.<AWS-REGION>.amazonaws.com/test-jenkins-agent:latest # Enter the jenkins inbound agent image.
-...
-...
-...
-```
+- [Configure Jenkins Agent k8s Pod Template](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/feature/k8s/AGENT.md)
 
 ## CloudFormation Execution Scripts
 
