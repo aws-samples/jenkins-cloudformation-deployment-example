@@ -1,5 +1,5 @@
 # Pull base image.
-FROM jenkins/inbound-agent:latest
+FROM jenkins/inbound-agent:4.7-1
 
 USER root
 

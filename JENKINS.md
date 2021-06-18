@@ -2,7 +2,7 @@
 
 ## CloudFormation Execution Scripts
 
-This [deploy-stack.sh](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/scripts/deploy-stack.sh) file can accept four different parameters and perform several types of CloudFormation stack executions such as deploy, create-changeset, and execute-changeset which is also reflected in the stages of this [Jenkinsfile](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/Jenkinsfile) pipeline. As for the [delete-stack.sh](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/scripts/delete-stack.sh) file, two parameters are accepted and when executed it will delete a CloudFormation stack based on the given stack name and region.
+This [deploy-stack.sh](scripts/deploy-stack.sh) file can accept four different parameters and perform several types of CloudFormation stack executions such as deploy, create-changeset, and execute-changeset which is also reflected in the stages of this [Jenkinsfile](Jenkinsfile) pipeline. As for the [delete-stack.sh](scripts/delete-stack.sh) file, two parameters are accepted and when executed it will delete a CloudFormation stack based on the given stack name and region.
 
 - The first parameter set is the stack name. The second parameter is the name of the parameters file name which resides in the `parameters/` folder. The third parameter is the name of the template which reside in the `cloudformation/` folder. The fourth parameter is the boolean condition to decide whether to execute the deployment right away or create a changeset. The fifth parameter is the region of the target account where the stack should be deployed.
 
@@ -11,7 +11,7 @@ This [deploy-stack.sh](https://github.com/aws-samples/jenkins-cloudformation-dep
 ~ scripts/deploy-stack.sh ${STACK_NAME} ${PARAMETERS_FILE_NAME} ${TEMPLATE_NAME} ${CHANGESET_MODE} ${REGION}
 ```
 
-- In the delete stage of this [Jenkinsfile](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/Jenkinsfile) pipeline, the [delete-stack.sh](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/scripts/delete-stack.sh) executed and accepts the name and region of the stack that was created to delete the stack.
+- In the delete stage of this [Jenkinsfile](Jenkinsfile) pipeline, the [delete-stack.sh](scripts/delete-stack.sh) executed and accepts the name and region of the stack that was created to delete the stack.
 
 ```bash
 # Delete a CloudFormation Stack
@@ -22,7 +22,7 @@ This [deploy-stack.sh](https://github.com/aws-samples/jenkins-cloudformation-dep
 
 ## Jenkinsfile
 
-In this [Jenkinsfile](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/Jenkinsfile), the individual pipeline build jobs will deploy individual microservices. The `k8sPodTemplate.yaml` is used to specify the kubernetes pod details and the inbound-agent that will be used to run the pipeline.
+In this [Jenkinsfile](Jenkinsfile), the individual pipeline build jobs will deploy individual microservices. The `k8sPodTemplate.yaml` is used to specify the kubernetes pod details and the inbound-agent that will be used to run the pipeline.
 
 - This pipeline stage will consist of the several stages for stack deployment, create changeset, execute changeset, and stack deletion. The `deploy-stack.sh` will execute when selected via parameters, and likewise the `delete-stack.sh` will be executed when selected by the parameters.
 - If you observe closely, there are several variables used within the pipeline stage actions below

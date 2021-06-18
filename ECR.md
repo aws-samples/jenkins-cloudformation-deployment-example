@@ -1,6 +1,6 @@
 # Create AWS ECR Repository
 
-Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent by referencing the [ECR repository policy example](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_within_account) that allows permission to push and pull images from the AWS Shared Services account. You must update the [ecr-permission-policy.json](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/docker/ecr-permission-policy.json) key/value with the AWS Account ID before executing commands.
+Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent by referencing the [ECR repository policy example](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_within_account) that allows permission to push and pull images from the AWS Shared Services account. You must update the [ecr-permission-policy.json](docker/ecr-permission-policy.json) key/value with the AWS Account ID before executing commands.
 
 ```json
 {
