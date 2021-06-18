@@ -100,21 +100,30 @@ For ease of understanding, we will refer the target-role as execution-role below
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "VisualEditor0",
             "Effect": "Allow",
             "Action": [
                 "cloudformation:CreateUploadBucket",
+                "cloudformation:ListStacks",
                 "cloudformation:CancelUpdateStack",
+                "cloudformation:ExecuteChangeSet",
+                "cloudformation:ListChangeSets",
+                "cloudformation:ListStackResources",
+                "cloudformation:DescribeStackResources",
+                "cloudformation:DescribeStackResource",
                 "cloudformation:CreateChangeSet",
-                "cloudformation:UpdateStack",
-                "cloudformation:ExecuteChangeSet"
                 "cloudformation:DeleteChangeSet",
+                "cloudformation:DescribeStacks",
                 "cloudformation:ContinueUpdateRollback",
+                "cloudformation:DescribeStackEvents",
                 "cloudformation:CreateStack",
                 "cloudformation:DeleteStack",
-                "s3:PutBucketPolicy",
+                "cloudformation:UpdateStack",
+                "cloudformation:DescribeChangeSet",
+                "s3:PutBucketPublicAccessBlock",
                 "s3:CreateBucket",
                 "s3:DeleteBucketPolicy",
+                "s3:PutEncryptionConfiguration",
+                "s3:PutBucketPolicy",
                 "s3:DeleteBucket"
             ],
             "Resource": "*"
