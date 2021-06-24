@@ -94,6 +94,7 @@ For ease of understanding, we will refer the target-role as execution-role below
 
 - Create an IAM role that has a common name in each target account. The role name we've created for use is called `AWSCloudFormationStackExecutionRole`. The role must have permissions to perform CloudFormation actions and any actions pertaining to the resources that will be created. In our case, we will be creating and S3 Bucket using CloudFormation.
 - This IAM role must also have an established trust relationship to the Shared Services account. In this case, the Jenkins Agent will be granted the ability to assume the role of the particular target account from the Shared Services account.
+- In our case, the IAM entity that will assume the `AWSCloudFormationStackExecutionRole` is the local credentials that is associated to the EKS Cluster Nodes.
 
 ```json
 {
