@@ -1,3 +1,11 @@
+## Security
+
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.
+
 # **Orchestrate Jenkins Workloads using Dynamic Pod Autoscaling with Amazon EKS**
 
 In this blog post, we’ll demonstrate how to leverage [Jenkins](https://www.jenkins.io/) with [Amazon Elastic Kubernetes Service (EKS)](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html) by running a Jenkins Manager within an EKS pod. By doing so, we can run Jenkins workloads by allowing Amazon EKS to spawn dynamic Jenkins Agent(s) to perform application and infrastructure deployment. Traditionally, customers will setup a Jenkins Manager-Agent architecture which will contain a set of manually added nodes with no autoscaling capabilities. By implementing this strategy, a robust approach is carried out to optimize the best performance with right sized compute capacity and work needed to successfully perform the build tasks.
@@ -94,7 +102,7 @@ For ease of understanding, we will refer the target-role as execution-role below
 
 - Create an IAM role that has a common name in each target account. The role name we've created for use is called `AWSCloudFormationStackExecutionRole`. The role must have permissions to perform CloudFormation actions and any actions pertaining to the resources that will be created. In our case, we will be creating and S3 Bucket using CloudFormation.
 - This IAM role must also have an established trust relationship to the Shared Services account. In this case, the Jenkins Agent will be granted the ability to assume the role of the particular target account from the Shared Services account.
-- In our case, the IAM entity that will assume the `AWSCloudFormationStackExecutionRole` is the local credentials that is associated to the EKS Cluster Nodes.
+- In our case, the IAM entity that will assume the `AWSCloudFormationStackExecutionRole` is the EKS Node Instance Role that is associated to the EKS Cluster Nodes.
 
 ```json
 {
