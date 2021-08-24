@@ -196,7 +196,6 @@ Security concerns are a key reason why we’re utilizing an IAM role instead of 
 - You must have the AWS Credentials Binding Plugin installed before this step. Enter the unique ID name as shown in the example below.
 - Enter the IAM Role ARN you created earlier for both the ID and IAM Role to use in the field as shown below.
 
-
 ![Image: img/jenkins-03.png](img/jenkins-03.png)
 *Figure 5. AWS Credentials Binding*
 
