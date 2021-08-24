@@ -54,7 +54,7 @@ The following is the minimum requirements for ensuring this solution will work.
 - Verify if the build requirements were correctly installed by checking the version.
 - [Create an EKS Cluster using eksctl.](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/EKS.md)
 - Verify that EKS nodes are running and available.
-- [Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent.](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_within_account)
+- [Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent.](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/ECR.md)
 
 ## Clone the Git Repository
 
@@ -174,6 +174,7 @@ After building both images, navigate to the `k8s/` directory, modify the manifes
 - Click: Add a new cloud → select Kubernetes from the drop menus
 
 ![Image: img/jenkins-02.png](img/jenkins-02.png)
+
 *Figure 4a. Jenkins Configure Nodes & Clouds*
 
 *Note: Before proceeding, please ensure that you can access your Amazon EKS cluster information, whether it is through Console or CLI.*
