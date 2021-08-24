@@ -1,6 +1,6 @@
 # Deploy Jenkins Application
 
-After you've built both images, navigate to the `k8s/` directory, modify the manifest file for the jenkins image, then execute the Jenkins [manifest.yaml](k8s/manifest.yaml) template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage, therefore you will need to establish and configure this template to fit that requirement).*
+After building both images, navigate to the `k8s/` directory, modify the manifest file for the Jenkins image, and then execute the Jenkins [manifest.yaml](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/k8s/manifest.yaml) template to setup the Jenkins application. *(Note: This Jenkins application is not configured with a persistent volume storage. Therefore, you will need to establish and configure this template to fit that requirement).*
 
 - Update kubeconfig and set the context of the cluster
 
