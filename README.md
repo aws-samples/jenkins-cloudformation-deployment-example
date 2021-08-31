@@ -49,12 +49,11 @@ The following is the minimum requirements for ensuring this solution will work.
   - [aws-iam-authenticator](https://docs.aws.amazon.com/eks/latest/userguide/install-aws-iam-authenticator.html)
   - [kubectl](https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html)
   - [eksctl](https://github.com/weaveworks/eksctl)
-
-- Configure your [AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) with the associated region.
-- Verify if the build requirements were correctly installed by checking the version.
-- [Create an EKS Cluster using eksctl.](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/EKS.md)
-- Verify that EKS nodes are running and available.
-- [Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent.](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/ECR.md)
+  - Configure your [AWS credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) with the associated region.
+  - Verify if the build requirements were correctly installed by checking the version.
+  - [Create an EKS Cluster using eksctl.](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/EKS.md)
+  - Verify that EKS nodes are running and available.
+  - [Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent.](https://github.com/aws-samples/jenkins-cloudformation-deployment-example/blob/main/ECR.md)
 
 ## Clone the Git Repository
 
