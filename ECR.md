@@ -5,7 +5,7 @@ Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent by refere
 ```json
 {
     "Principal": {
-        "AWS": "arn:aws:iam::<AWS-ACCOUNT-ID>:root"
+        "AWS": "arn:aws:iam::926543670953:root"
     }
 }
 ```
@@ -13,8 +13,8 @@ Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent by refere
 - Replace the Repository Name and Region to create an AWS ECR Repository with repository permissions for Jenkins Manager
 
 ```bash
-~ REPOSITORY_NAME="test-jenkins-manager"
-~ REGION="us-east-1"
+~ REPOSITORY_NAME="Ayo-jenkins-manager"
+~ REGION="us-west-2"
 
 ~ aws ecr create-repository \
 --repository-name $REPOSITORY_NAME \
@@ -31,8 +31,8 @@ Create an AWS ECR Repository for the Jenkins Manager and Jenkins Agent by refere
 - Replace the Repository Name and Region to create an AWS ECR Repository with repository permissions for Jenkins Agent
 
 ```bash
-~ REPOSITORY_NAME="test-jenkins-agent"
-~ REGION="us-east-1"
+~ REPOSITORY_NAME="Ayo-jenkins-agent"
+~ REGION="us-west-2"
 
 ~ aws ecr create-repository \
 --repository-name $REPOSITORY_NAME \
