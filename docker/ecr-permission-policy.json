@@ -5,7 +5,7 @@
         "Sid": "PermissionPolicy",
         "Effect": "Allow",
         "Principal": {
-          "AWS": "arn:aws:iam::<Enter The AWS ACCOUNT ID>:root"
+          "AWS": "arn:aws:iam::926543670953:root"
         },
         "Action": [
           "ecr:BatchCheckLayerAvailability",
