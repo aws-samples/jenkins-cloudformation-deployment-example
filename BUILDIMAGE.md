@@ -70,9 +70,9 @@ Build the custom docker images for the Jenkins Manager and the Jenkins Agent, an
 ~ LC_CTYPE=C HASH=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)
 
 ~ AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-~ REPOSITORY_NAME="test-jenkins-manager"
-~ REGION="us-east-1"
-~ FOLDER_NAME="jenkins-manager/"
+~ REPOSITORY_NAME="Ayo-jenkins-manager"
+~ REGION="us-west-2"
+~ FOLDER_NAME="jenkins-manager-dir/"
 ~ IMG_TAG=$HASH
 ~ LATEST_TAG=latest
 
@@ -80,7 +80,7 @@ Build the custom docker images for the Jenkins Manager and the Jenkins Agent, an
 ~ aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
 # Build Image
-~ REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME
+~ REPOSITORY_URI=$926543670953.dkr.ecr.$REGION.amazonaws.com/$REPOSITORY_NAME
 ~ docker build -t $REPOSITORY_URI:$LATEST_TAG $FOLDER_NAME
 
 # Tag Image
@@ -97,9 +97,9 @@ Build the custom docker images for the Jenkins Manager and the Jenkins Agent, an
 ~ LC_CTYPE=C HASH=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)
 
 ~ AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
-~ REPOSITORY_NAME="test-jenkins-agent"
-~ REGION="us-east-1"
-~ FOLDER_NAME="jenkins-agent/"
+~ REPOSITORY_NAME="Ayo-jenkins-agent"
+~ REGION="us-west-2"
+~ FOLDER_NAME="jenkins-agent-dir2/"
 ~ IMG_TAG=$HASH
 ~ LATEST_TAG=latest
 
