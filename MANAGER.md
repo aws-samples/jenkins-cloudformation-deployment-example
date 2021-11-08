@@ -6,7 +6,7 @@ After building both images, navigate to the `k8s/` directory, modify the manifes
 
 ```bash
 # Update kubeconfig to select the cluster to use
-~ aws eks update-kubeconfig <CLUSTER-NAME> --region <REGION-NAME>
+~ aws eks update-kubeconfig https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/stackinfo?stackId=arn%3Aaws%3Acloudformation%3Aus-west-2%3A926543670953%3Astack%2Feksctl-adorable-creature-1636316651-cluster%2Fae0c23f0-4008-11ec-997d-02cde7e17779 --region us-west-2
 ```
 
 ```yaml
@@ -20,7 +20,7 @@ spec:
   serviceAccountName: jenkins-manager # Enter the service account name being used
   containers:
   - name: jenkins-manager
-    image: <AWS-ACCOUNT-ID>.dkr.ecr.<AWS-REGION>.amazonaws.com/test-jenkins-manager:latest # Enter the jenkins manager image
+    image: 926543670953.dkr.ecr.us-west-2.amazonaws.com/Ayo-jenkins-manager:latest # Enter the jenkins manager image
 ...
 ...
 ...
