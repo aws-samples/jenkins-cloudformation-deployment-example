@@ -3,6 +3,7 @@ kind: Pod
 metadata:
   labels:
     some-label: jenkins-pipeline
+    namespace: jenkins
 spec:
   serviceAccountName: jenkins-agent # Enter the service account name being used
   securityContext:
@@ -11,7 +12,7 @@ spec:
     runAsNonRoot: false
   containers:
   - name: jenkins-agent
-    image: <AWS-ACCOUNT-ID>.dkr.ecr.<AWS-REGION>.amazonaws.com/test-jenkins-agent:latest # Enter the jenkins inbound agent image.
+    image: 914401603085.dkr.ecr.us-east-1.amazonaws.com/test-jenkins-agent:FrdMPD4 # Enter the jenkins inbound agent image.
     command:
     - cat
     tty: true

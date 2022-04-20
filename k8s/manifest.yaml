@@ -16,6 +16,37 @@ kind: ServiceAccount
 metadata:
   name: jenkins-agent
   namespace: jenkins
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: efs-pv
+  namespace: jenkins
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: fs-056beff084674be67
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: efs-claim
+  namespace: jenkins
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: efs-sc
+  resources:
+    requests:
+      storage: 1Gi
 
 ---
 kind: Role
@@ -109,14 +140,14 @@ spec:
         runAsNonRoot: false
       containers:
         - name: jenkins-manager
-          image: <AWS-ACCOUNT-ID>.dkr.ecr.<AWS-REGION>.amazonaws.com/test-jenkins-manager:latest # Enter the jenkins manager image
+          image: 914401603085.dkr.ecr.us-east-1.amazonaws.com/jenkins-manager:latest
           imagePullPolicy: Always
           resources:
             requests:
               cpu: 500m
               memory: 512Mi
             limits:
-              cpu: "1"
+              cpu: "4"
               memory: 4096Mi
           ports:
             - containerPort: 8080
@@ -125,3 +156,7 @@ spec:
             - containerPort: 50000
               protocol: TCP
               name: jnlp
+      volumes:
+        - name: persistent-storage
+          persistentVolumeClaim:
+            claimName: efs-claim
