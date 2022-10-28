@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:2.298
+FROM jenkins/jenkins:2.375
 
 USER root
 
@@ -18,16 +18,16 @@ RUN set +x \
     pip3 --version; aws --version;
 
 # copy plugins to /usr/share/jenkins
-COPY plugins/plugins.txt /usr/share/jenkins/plugins.txt
-COPY plugins/plugins_dev.txt /usr/share/jenkins/plugins_dev.txt
+FROM jenkins/jenkins:lts-jdk11
+COPY --chown=jenkins:jenkins plugins/plugins.txt /usr/share/jenkins/ref/plugins.txt
+COPY --chown=jenkins:jenkins plugins/plugins_dev.txt /usr/share/jenkins/ref/plugins_dev.txt
+
 
 # install Recommended Plugins
-RUN set +x \
-    && /usr/local/bin/install-plugins.sh < /usr/share/jenkins/plugins.txt
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 
 # install Additional Plugins
-RUN set +x \
-    && /usr/local/bin/install-plugins.sh < /usr/share/jenkins/plugins_dev.txt
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins_dev.txt
 
 # change directory owner for jenkins home
 RUN chown -R jenkins:jenkins /var/jenkins_home
